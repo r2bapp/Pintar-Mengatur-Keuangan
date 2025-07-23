@@ -1,3 +1,4 @@
+import { supabase } from '../../lib/supabaseClient';
 import { useState } from 'react';
 
 type Entry = {
