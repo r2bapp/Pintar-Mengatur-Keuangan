@@ -1,5 +1,8 @@
 import { supabase } from '../../lib/supabaseClient';
 import { useState } from 'react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { unparse } from 'papaparse';
 
 type Entry = {
   type: 'income' | 'expense';
@@ -36,6 +39,47 @@ export default function FamilyFinanceForm() {
   setAmount('');
 };
 
+const exportPDF = () => {
+  const doc = new jsPDF();
+
+  doc.setFontSize(16);
+  doc.text("Laporan Keuangan Keluarga", 14, 20);
+
+  autoTable(doc, {
+    startY: 30,
+    head: [['Tipe', 'Kategori', 'Jumlah']],
+    body: entries.map(e => [
+      e.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+      e.category,
+      `Rp ${e.amount.toLocaleString()}`
+    ]),
+  });
+
+  doc.text(`Total Pemasukan: Rp ${totalIncome.toLocaleString()}`, 14, doc.lastAutoTable.finalY + 10);
+  doc.text(`Total Pengeluaran: Rp ${totalExpense.toLocaleString()}`, 14, doc.lastAutoTable.finalY + 20);
+  doc.text(`Saldo Bersih: Rp ${(totalIncome - totalExpense).toLocaleString()}`, 14, doc.lastAutoTable.finalY + 30);
+
+  doc.save("laporan-keuangan-keluarga.pdf");
+};
+
+  const exportCSV = () => {
+  const csv = unparse(
+    entries.map(e => ({
+      Tipe: e.type === 'income' ? 'Pemasukan' : 'Pengeluaran',
+      Kategori: e.category,
+      Jumlah: e.amount,
+    }))
+  );
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.setAttribute("download", "laporan-keuangan-keluarga.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
   const totalIncome = entries.filter(e => e.type === 'income').reduce((sum, e) => sum + e.amount, 0);
   const totalExpense = entries.filter(e => e.type === 'expense').reduce((sum, e) => sum + e.amount, 0);
