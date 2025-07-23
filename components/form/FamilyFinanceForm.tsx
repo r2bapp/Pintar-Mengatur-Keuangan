@@ -13,20 +13,29 @@ export default function FamilyFinanceForm() {
   const [amount, setAmount] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('income');
 
-  const addEntry = () => {
-    if (!category || !amount) return;
+ const addEntry = async () => {
+  if (!category || !amount) return;
 
-    setEntries([
-      ...entries,
-      {
-        type,
-        category,
-        amount: parseFloat(amount),
-      },
-    ]);
-    setCategory('');
-    setAmount('');
+  const newEntry = {
+    type,
+    category,
+    amount: parseFloat(amount),
+    role: 'keluarga', // untuk identifikasi jenis
+    user_id: 'guest', // nanti diganti dari auth
   };
+
+  const { error } = await supabase.from('transactions').insert([newEntry]);
+
+  if (error) {
+    alert("Gagal menyimpan data");
+    return;
+  }
+
+  setEntries([...entries, newEntry]);
+  setCategory('');
+  setAmount('');
+};
+
 
   const totalIncome = entries.filter(e => e.type === 'income').reduce((sum, e) => sum + e.amount, 0);
   const totalExpense = entries.filter(e => e.type === 'expense').reduce((sum, e) => sum + e.amount, 0);
