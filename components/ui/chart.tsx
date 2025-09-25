@@ -2,16 +2,21 @@
 
 import * as React from "react"
 import {
-  ChartContainer,
-  ChartLine,
-  ChartTooltip,
-  ChartTooltipContent,
-  CartesianGrid,
   LineChart,
+  CartesianGrid,
   XAxis,
   YAxis,
-  RechartsLegend,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts"
+
+import {
+  ChartContainer,
+  ChartLine,
+  ChartTooltipContent,
 } from "@/components/ui/chart"
+
 
 const data = [
   { month: "Jan", income: 4000, expense: 2400 },
