@@ -1,7 +1,6 @@
 "use client"
 
 import type { ChartConfig } from "@/components/ui/chart"
-import { Pie } from "recharts" // Import Pie component
 
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
@@ -28,20 +27,21 @@ import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import { useAuth } from "@/hooks/use-auth"
 import { Footer } from "@/components/footer"
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart" // Import custom shadcn/ui chart components
+
+// Import core Recharts components directly from 'recharts'
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartXAxis,
-  ChartYAxis,
   CartesianGrid,
-  LineChart, // Corrected import
-  RechartsPieChart, // Corrected import
-  RechartsLegend, // Corrected import
-  Cell, // Corrected import
-  Dot, // Corrected import
-  Line, // Corrected import for Line component within LineChart
-} from "@/components/ui/chart" // Import chart components
+  LineChart,
+  XAxis,
+  YAxis,
+  Legend,
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell,
+  Line,
+  Dot,
+} from "recharts"
 
 interface MonthlyData {
   month: string
@@ -951,15 +951,15 @@ export default function ReportsPage() {
                     }}
                   >
                     <CartesianGrid vertical={false} />
-                    <ChartXAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} minTickGap={32} />
-                    <ChartYAxis
+                    <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} minTickGap={32} />
+                    <YAxis
                       tickLine={false}
                       axisLine={false}
                       tickFormatter={(value: number) => formatCurrency(value)}
                       tickMargin={8}
                     />
                     <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dashed" />} />
-                    <RechartsLegend /> {/* Use RechartsLegend */}
+                    <Legend />
                     <Line
                       dataKey="income"
                       type="monotone"
@@ -1029,7 +1029,7 @@ export default function ReportsPage() {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <RechartsLegend layout="vertical" verticalAlign="middle" align="right" />
+                    <Legend layout="vertical" verticalAlign="middle" align="right" />
                   </RechartsPieChart>
                 </ChartContainer>
               )}
@@ -1075,7 +1075,7 @@ export default function ReportsPage() {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <RechartsLegend layout="vertical" verticalAlign="middle" align="right" />
+                    <Legend layout="vertical" verticalAlign="middle" align="right" />
                   </RechartsPieChart>
                 </ChartContainer>
               )}

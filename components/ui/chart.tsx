@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Dot, Line, type LineProps } from "recharts"
+import { Dot, Line, type LineProps } from "recharts" // Keep Line and Dot for internal use if needed, but not for export
 
 import { cn } from "@/lib/utils"
 import {
@@ -81,86 +81,73 @@ interface ChartTooltipContentProps extends React.ComponentProps<typeof ShadcnToo
   formatter?: (value: any, name: string, props: any) => React.ReactNode
 }
 
-const ChartTooltipContent = React.forwardRef<
-  React.ElementRef<typeof ShadcnTooltipContent>,
-  ChartTooltipContentProps
->(({ indicator = "dot", nameKey, valueKey, formatter, className, ...props }, ref) => {
-  return (
-    <ShadcnTooltipContent
-      ref={ref}
-      className={cn("grid min-w-[120px] items-center", className)}
-      {...props}
-    >
-      {(payload: any[]) => {
-        if (!payload || payload.length === 0) return null
-        const { payload: itemPayload, label } = payload[0]
-        return (
-          <div className="grid gap-1">
-            <div className="text-sm font-medium leading-none">{label}</div>
-            {payload.map((item, index) => {
-              const name = nameKey ? itemPayload[nameKey] : item.name
-              const value = valueKey ? itemPayload[valueKey] : item.value
-              const formattedValue = formatter ? formatter(value, name, item) : value
-              return (
-                <div
-                  key={item.dataKey || index}
-                  className="flex items-center justify-between gap-4"
-                >
-                  <div className="flex items-center gap-2">
-                    {indicator === "dot" && (
-                      <span
-                        className="flex h-3 w-3 rounded-full"
-                        style={{ backgroundColor: item.color }}
-                      />
-                    )}
-                    {indicator === "line" && (
-                      <span
-                        className="flex h-3 w-1 rounded-full"
-                        style={{ backgroundColor: item.color }}
-                      />
-                    )}
-                    {indicator === "dashed" && (
-                      <span
-                        className="flex h-3 w-3 rounded-full border-2 border-dashed"
-                        style={{ borderColor: item.color }}
-                      />
-                    )}
-                    <span className="text-muted-foreground">{name}</span>
+const ChartTooltipContent = React.forwardRef<React.ElementRef<typeof ShadcnTooltipContent>, ChartTooltipContentProps>(
+  ({ indicator = "dot", nameKey, valueKey, formatter, className, ...props }, ref) => {
+    return (
+      <ShadcnTooltipContent ref={ref} className={cn("grid min-w-[120px] items-center", className)} {...props}>
+        {(payload: any[]) => {
+          if (!payload || payload.length === 0) return null
+          const { payload: itemPayload, label } = payload[0]
+          return (
+            <div className="grid gap-1">
+              <div className="text-sm font-medium leading-none">{label}</div>
+              {payload.map((item, index) => {
+                const name = nameKey ? itemPayload[nameKey] : item.name
+                const value = valueKey ? itemPayload[valueKey] : item.value
+                const formattedValue = formatter ? formatter(value, name, item) : value
+                return (
+                  <div key={item.dataKey || index} className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                      {indicator === "dot" && (
+                        <span className="flex h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
+                      )}
+                      {indicator === "line" && (
+                        <span className="flex h-3 w-1 rounded-full" style={{ backgroundColor: item.color }} />
+                      )}
+                      {indicator === "dashed" && (
+                        <span
+                          className="flex h-3 w-3 rounded-full border-2 border-dashed"
+                          style={{ borderColor: item.color }}
+                        />
+                      )}
+                      <span className="text-muted-foreground">{name}</span>
+                    </div>
+                    <span className="font-medium">{formattedValue}</span>
                   </div>
-                  <span className="font-medium">{formattedValue}</span>
-                </div>
-              )
-            })}
-          </div>
-        )
-      }}
-    </ShadcnTooltipContent>
-  )
-})
+                )
+              })}
+            </div>
+          )
+        }}
+      </ShadcnTooltipContent>
+    )
+  },
+)
 ChartTooltipContent.displayName = "ChartTooltipContent"
 
 // --------------------------------------------------
-// Custom Wrappers
+// Custom Wrappers (if any, otherwise remove)
 // --------------------------------------------------
+// If you have custom wrappers for Line, Pie, etc., define them here.
+// Otherwise, import Line, Pie directly from 'recharts' in your page.
+// For now, I'll keep ChartLine as an example, but ensure it's used correctly.
 interface ChartLineProps extends LineProps {
   dataKey: string
   stroke?: string
   name?: string
 }
 
-const ChartLine = React.forwardRef<any, ChartLineProps>(
-  ({ dataKey, stroke, name, ...props }, ref) => (
-    <Line
-      ref={ref}
-      dataKey={dataKey}
-      stroke={stroke || "var(--color-primary)"}
-      name={name || dataKey}
-      dot={<Dot r={4} fill="var(--color-primary)" stroke="var(--color-primary)" />}
-      activeDot={<Dot r={6} fill="var(--color-primary)" stroke="var(--color-primary)" />}
-      {...props}
-    />
-  ),
-)
+const ChartLine = React.forwardRef<any, ChartLineProps>(({ dataKey, stroke, name, ...props }, ref) => (
+  <Line
+    ref={ref}
+    dataKey={dataKey}
+    stroke={stroke || "var(--color-primary)"}
+    name={name || dataKey}
+    dot={<Dot r={4} fill="var(--color-primary)" stroke="var(--color-primary)" />}
+    activeDot={<Dot r={6} fill="var(--color-primary)" stroke="var(--color-primary)" />}
+    {...props}
+  />
+))
 ChartLine.displayName = "ChartLine"
 
 // --------------------------------------------------
