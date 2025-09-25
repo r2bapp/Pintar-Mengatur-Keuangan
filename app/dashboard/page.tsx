@@ -15,7 +15,6 @@ import {
   RefreshCw,
   Upload,
   Target,
-  Bot,
 } from "lucide-react" // Added Target, Bot
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
@@ -370,11 +369,12 @@ export default function DashboardPage() {
                 Tujuan Keuangan
               </Button>
               <Button
-                className="w-full justify-start bg-rose-600 hover:bg-rose-700"
-                onClick={() => router.push("/dashboard/ai-assistant")} // Link to AI Assistant
+                className="w-full justify-start bg-transparent border-gray-300 text-navy-600 hover:bg-navy-50"
+                variant="outline"
+                onClick={handleRefresh}
               >
-                <Bot className="h-4 w-4 mr-2" />
-                Asisten AI Keuangan
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh Data
               </Button>
               <Button
                 className="w-full justify-start bg-gold-600 hover:bg-gold-700"
@@ -382,14 +382,6 @@ export default function DashboardPage() {
               >
                 <Upload className="h-4 w-4 mr-2" />
                 Import Data
-              </Button>
-              <Button
-                className="w-full justify-start bg-transparent border-gray-300 text-navy-600 hover:bg-navy-50"
-                variant="outline"
-                onClick={handleRefresh}
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh Data
               </Button>
             </CardContent>
           </Card>
