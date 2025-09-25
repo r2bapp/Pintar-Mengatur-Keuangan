@@ -6,14 +6,7 @@ import type { User } from "@supabase/supabase-js"
 import type { Database } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 
-// Type untuk profile tabel
 type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"]
-
-// Type metadata di Supabase Auth
-interface UserMetadata {
-  full_name: string
-  user_type: "personal" | "umkm" | "business" // contoh enum, bisa disesuaikan
-}
 
 export function useAuth() {
   const router = useRouter()
@@ -21,7 +14,6 @@ export function useAuth() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  /** Fetch profile dari user_profiles */
   const fetchProfile = useCallback(async (userId: string) => {
     try {
       const { data, error } = await supabase
@@ -36,7 +28,7 @@ export function useAuth() {
       }
 
       if (!data) {
-        console.log("No profile found for user. Waiting for trigger or user setup.")
+        console.log("No profile found yet, waiting for trigger or manual completion.")
         setProfile(null)
         return
       }
@@ -47,16 +39,14 @@ export function useAuth() {
     }
   }, [])
 
-  /** Sign out user */
   const signOut = useCallback(async () => {
     setLoading(true)
     try {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
-
       setUser(null)
       setProfile(null)
-      router.push("/")
+      router.push("/") // Redirect ke halaman login
     } catch (error) {
       console.error("Sign out error:", error)
       setUser(null)
@@ -67,15 +57,19 @@ export function useAuth() {
     }
   }, [router])
 
-  /** Sign up user baru dengan metadata */
   const signUp = useCallback(
-    async (email: string, password: string, metadata: UserMetadata) => {
+    async (email: string, password: string, fullName: string, userType: string) => {
       setLoading(true)
       try {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: metadata },
+          options: {
+            data: {
+              full_name: fullName,
+              user_type: userType,
+            },
+          },
         })
 
         if (error) throw error
@@ -83,7 +77,6 @@ export function useAuth() {
         if (data.user) {
           setUser(data.user)
         }
-
         return { success: true, user: data.user }
       } catch (error: any) {
         console.error("Sign up error:", error)
@@ -92,10 +85,9 @@ export function useAuth() {
         setLoading(false)
       }
     },
-    []
+    [],
   )
 
-  /** Sign in user */
   const signIn = useCallback(async (email: string, password: string) => {
     setLoading(true)
     try {
@@ -105,10 +97,10 @@ export function useAuth() {
       })
 
       if (error) throw error
+
       if (data.user) {
         setUser(data.user)
       }
-
       return { success: true, user: data.user }
     } catch (error: any) {
       console.error("Sign in error:", error)
@@ -118,15 +110,18 @@ export function useAuth() {
     }
   }, [])
 
-  /** Cek session di awal */
   useEffect(() => {
     const getSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession()
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession()
 
         if (error) {
           console.error("Initial session error:", error)
-          await signOut()
+          setUser(null)
+          setProfile(null)
           return
         }
 
@@ -136,7 +131,8 @@ export function useAuth() {
         }
       } catch (error) {
         console.error("Initial auth check error:", error)
-        await signOut()
+        setUser(null)
+        setProfile(null)
       } finally {
         setLoading(false)
       }
@@ -144,25 +140,26 @@ export function useAuth() {
 
     getSession()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("Auth state changed:", event, session?.user?.email)
-        setUser(session?.user ?? null)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session?.user?.email)
+      setUser(session?.user ?? null)
 
-        if (event === "SIGNED_OUT" || !session?.user) {
-          await signOut()
-        } else if (session?.user) {
-          await fetchProfile(session.user.id)
-        }
-
-        setLoading(false)
+      if (event === "SIGNED_OUT" || !session?.user) {
+        setUser(null)
+        setProfile(null)
+        router.push("/") // langsung redirect, tanpa signOut loop
+      } else if (session?.user) {
+        await fetchProfile(session.user.id)
       }
-    )
+
+      setLoading(false)
+    })
 
     return () => subscription.unsubscribe()
-  }, [fetchProfile, signOut])
+  }, [fetchProfile, router])
 
-  /** Update profile user */
   const updateProfile = useCallback(
     async (updates: Partial<UserProfile>) => {
       if (!user) return false
@@ -185,7 +182,7 @@ export function useAuth() {
         setLoading(false)
       }
     },
-    [user, fetchProfile]
+    [user, fetchProfile],
   )
 
   return {
