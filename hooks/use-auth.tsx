@@ -4,19 +4,23 @@ import { useState, useEffect, useCallback } from "react"
 import { supabase } from "@/lib/supabase"
 import type { User } from "@supabase/supabase-js"
 import type { Database } from "@/lib/supabase"
-import { useRouter } from "next/navigation" // Import useRouter
+import { useRouter } from "next/navigation"
 
 type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"]
 
 export function useAuth() {
-  const router = useRouter() // Initialize useRouter
+  const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
   const fetchProfile = useCallback(async (userId: string) => {
     try {
-      const { data, error } = await supabase.from("user_profiles").select("*").eq("id", userId).maybeSingle()
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("*")
+        .eq("id", userId)
+        .maybeSingle()
 
       if (error) {
         console.error("Profile fetch error:", error)
@@ -24,7 +28,7 @@ export function useAuth() {
       }
 
       if (!data) {
-        console.log("No profile found for user, assuming trigger will create or user needs to complete.")
+        console.log("No profile found yet, waiting for trigger or manual completion.")
         setProfile(null)
         return
       }
@@ -42,10 +46,9 @@ export function useAuth() {
       if (error) throw error
       setUser(null)
       setProfile(null)
-      router.push("/") // Redirect to login page after sign out
+      router.push("/") // Redirect ke halaman login
     } catch (error) {
       console.error("Sign out error:", error)
-      // Even if sign out fails, clear local state and redirect to prevent loop
       setUser(null)
       setProfile(null)
       router.push("/")
@@ -54,37 +57,36 @@ export function useAuth() {
     }
   }, [router])
 
-  const signUp = useCallback(async (email: string, password: string, fullName: string, userType: string) => {
-    setLoading(true)
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName, // Pass to metadata for trigger
-            user_type: userType, // Pass to metadata for trigger
+  const signUp = useCallback(
+    async (email: string, password: string, fullName: string, userType: string) => {
+      setLoading(true)
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+              user_type: userType,
+            },
           },
-        },
-      })
+        })
 
-      if (error) throw error
+        if (error) throw error
 
-      // The trigger 'on_auth_user_created' will handle initial profile creation.
-      // No need for client-side profile insert here.
-
-      if (data.user) {
-        setUser(data.user)
-        // Profile will be fetched by onAuthStateChange or after successful login
+        if (data.user) {
+          setUser(data.user)
+        }
+        return { success: true, user: data.user }
+      } catch (error: any) {
+        console.error("Sign up error:", error)
+        return { success: false, error: error.message }
+      } finally {
+        setLoading(false)
       }
-      return { success: true, user: data.user }
-    } catch (error: any) {
-      console.error("Sign up error:", error)
-      return { success: false, error: error.message }
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+    },
+    [],
+  )
 
   const signIn = useCallback(async (email: string, password: string) => {
     setLoading(true)
@@ -98,7 +100,6 @@ export function useAuth() {
 
       if (data.user) {
         setUser(data.user)
-        // Profile will be fetched by onAuthStateChange
       }
       return { success: true, user: data.user }
     } catch (error: any) {
@@ -119,7 +120,8 @@ export function useAuth() {
 
         if (error) {
           console.error("Initial session error:", error)
-          await signOut() // Force sign out on initial session error
+          setUser(null)
+          setProfile(null)
           return
         }
 
@@ -129,7 +131,8 @@ export function useAuth() {
         }
       } catch (error) {
         console.error("Initial auth check error:", error)
-        await signOut() // Force sign out on any initial auth check error
+        setUser(null)
+        setProfile(null)
       } finally {
         setLoading(false)
       }
@@ -144,15 +147,18 @@ export function useAuth() {
       setUser(session?.user ?? null)
 
       if (event === "SIGNED_OUT" || !session?.user) {
-        await signOut() // Use the centralized signOut function
+        setUser(null)
+        setProfile(null)
+        router.push("/") // langsung redirect, tanpa signOut loop
       } else if (session?.user) {
         await fetchProfile(session.user.id)
       }
+
       setLoading(false)
     })
 
     return () => subscription.unsubscribe()
-  }, [fetchProfile, signOut]) // Add fetchProfile and signOut to dependencies
+  }, [fetchProfile, router])
 
   const updateProfile = useCallback(
     async (updates: Partial<UserProfile>) => {
@@ -160,11 +166,14 @@ export function useAuth() {
 
       setLoading(true)
       try {
-        const { error } = await supabase.from("user_profiles").update(updates).eq("id", user.id)
+        const { error } = await supabase
+          .from("user_profiles")
+          .update(updates)
+          .eq("id", user.id)
 
         if (error) throw error
 
-        await fetchProfile(user.id) // Refresh profile
+        await fetchProfile(user.id)
         return true
       } catch (error) {
         console.error("Profile update error:", error)
