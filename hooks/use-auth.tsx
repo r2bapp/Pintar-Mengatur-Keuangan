@@ -6,7 +6,14 @@ import type { User } from "@supabase/supabase-js"
 import type { Database } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 
+// Type untuk profile tabel
 type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"]
+
+// Type metadata di Supabase Auth
+interface UserMetadata {
+  full_name: string
+  user_type: "personal" | "umkm" | "business" // contoh enum, bisa disesuaikan
+}
 
 export function useAuth() {
   const router = useRouter()
@@ -14,7 +21,7 @@ export function useAuth() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  /** Fetch profile dari tabel user_profiles */
+  /** Fetch profile dari user_profiles */
   const fetchProfile = useCallback(async (userId: string) => {
     try {
       const { data, error } = await supabase
@@ -29,9 +36,7 @@ export function useAuth() {
       }
 
       if (!data) {
-        console.log(
-          "No profile found for user, assuming trigger will create or user needs to complete."
-        )
+        console.log("No profile found for user. Waiting for trigger or user setup.")
         setProfile(null)
         return
       }
@@ -62,20 +67,15 @@ export function useAuth() {
     }
   }, [router])
 
-  /** Sign up user baru */
+  /** Sign up user baru dengan metadata */
   const signUp = useCallback(
-    async (email: string, password: string, fullName: string, userType: string) => {
+    async (email: string, password: string, metadata: UserMetadata) => {
       setLoading(true)
       try {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: {
-            data: {
-              full_name: fullName, // Metadata → trigger insert ke user_profiles
-              user_type: userType,
-            },
-          },
+          options: { data: metadata },
         })
 
         if (error) throw error
@@ -105,7 +105,6 @@ export function useAuth() {
       })
 
       if (error) throw error
-
       if (data.user) {
         setUser(data.user)
       }
@@ -119,7 +118,7 @@ export function useAuth() {
     }
   }, [])
 
-  /** Cek session saat mount */
+  /** Cek session di awal */
   useEffect(() => {
     const getSession = async () => {
       try {
@@ -163,7 +162,7 @@ export function useAuth() {
     return () => subscription.unsubscribe()
   }, [fetchProfile, signOut])
 
-  /** Update profile */
+  /** Update profile user */
   const updateProfile = useCallback(
     async (updates: Partial<UserProfile>) => {
       if (!user) return false
