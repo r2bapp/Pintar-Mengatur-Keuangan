@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 210 40% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 40% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 40% 15%;
+    --primary: 210 100% 20%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 120 20% 85%;
+    --secondary-foreground: 120 40% 20%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 210 20% 45%;
+    --accent: 45 93% 47%;
+    --accent-foreground: 45 100% 10%;
+    --destructive: 340 75% 85%;
+    --destructive-foreground: 340 75% 35%;
+    --border: 210 40% 90%;
+    --input: 210 40% 90%;
+    --ring: 210 100% 20%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 210 40% 8%;
+    --foreground: 0 0% 95%;
+    --card: 210 40% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 210 40% 10%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 120 40% 40%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 210 40% 15%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 210 40% 15%;
+    --muted-foreground: 210 20% 65%;
+    --accent: 180 100% 70%;
+    --accent-foreground: 180 100% 10%;
+    --destructive: 0 75% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 40% 20%;
+    --input: 210 40% 20%;
+    --ring: 120 40% 40%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom utility classes for our color scheme */
+@layer utilities {
+  .bg-navy {
+    @apply bg-navy-800;
+  }
+  .bg-navy-gradient {
+    background: linear-gradient(135deg, #243b53 0%, #334e68 100%);
+  }
+  .bg-sage-gradient {
+    background: linear-gradient(135deg, #2d5a2d 0%, #509050 100%);
+  }
+  .bg-gold-gradient {
+    background: linear-gradient(135deg, #eab308 0%, #fde047 100%);
+  }
+  .text-navy {
+    @apply text-navy-800;
+  }
+  .text-sage {
+    @apply text-sage-600;
+  }
+  .text-gold {
+    @apply text-gold-600;
+  }
+  .text-rose-soft {
+    @apply text-rose-400;
+  }
+}
