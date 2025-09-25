@@ -20,7 +20,6 @@ import {
   Briefcase,
   AlertCircle,
 } from "lucide-react"
-import { testSupabaseConnection } from "@/lib/supabase"
 import { Footer } from "@/components/footer"
 import { ConnectionTest } from "@/components/connection-test"
 import { useAuth } from "@/hooks/use-auth" // Import useAuth
@@ -80,49 +79,26 @@ const userTypes = [
 export default function HomePage() {
   const router = useRouter()
   const { user, loading: authHookLoading, signIn, signUp } = useAuth() // Use signIn, signUp from useAuth
-  const [loading, setLoading] = useState(true)
-  const [authLoading, setAuthLoading] = useState(false)
+  const [authLoading, setAuthLoading] = useState(false) // This is for sign-in/sign-up button loading
   const [selectedUserType, setSelectedUserType] = useState("personal")
-  const [connectionReady, setConnectionReady] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     fullName: "",
     confirmPassword: "",
   })
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
 
+  // Effect for redirection after auth state is known
   useEffect(() => {
-    // Check connection and session
-    const initializeApp = async () => {
-      try {
-        // Test Supabase connection first
-        const connectionTest = await testSupabaseConnection()
-
-        if (!connectionTest.success) {
-          setError(`Koneksi database gagal: ${connectionTest.error}`)
-          setLoading(false)
-          return
-        }
-
-        setConnectionReady(true)
-
-        // Check if user is already logged in (handled by useAuth now)
-        if (user && !authHookLoading) {
-          router.push("/dashboard")
-          return
-        }
-      } catch (err: any) {
-        console.error("App initialization error:", err)
-        setError(`Gagal menginisialisasi aplikasi: ${err.message}`)
-      } finally {
-        setLoading(false)
+    if (!authHookLoading) {
+      // Only act when auth state is resolved
+      if (user) {
+        router.push("/dashboard")
       }
     }
-
-    initializeApp()
-  }, [router, user, authHookLoading]) // Add user and authHookLoading to dependencies
+  }, [user, authHookLoading, router])
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -130,10 +106,11 @@ export default function HomePage() {
     setSuccess(null)
 
     // Pre-flight checks
-    if (!connectionReady) {
-      setError("Koneksi database belum siap. Silakan refresh halaman.")
-      return
-    }
+    // ConnectionTest component will show connection status, no need to block here
+    // if (!connectionReady) {
+    //   setError("Koneksi database belum siap. Silakan refresh halaman.")
+    //   return
+    // }
 
     if (formData.password !== formData.confirmPassword) {
       setError("Password tidak cocok")
@@ -204,10 +181,11 @@ export default function HomePage() {
     setError(null)
     setSuccess(null)
 
-    if (!connectionReady) {
-      setError("Koneksi database belum siap. Silakan refresh halaman.")
-      return
-    }
+    // ConnectionTest component will show connection status, no need to block here
+    // if (!connectionReady) {
+    //   setError("Koneksi database belum siap. Silakan refresh halaman.")
+    //   return
+    // }
 
     setAuthLoading(true)
     try {
@@ -240,8 +218,8 @@ export default function HomePage() {
     }
   }
 
-  if (loading || authHookLoading) {
-    // Use authHookLoading from useAuth
+  if (authHookLoading) {
+    // Use authHookLoading from useAuth for the main loading spinner
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -286,7 +264,7 @@ export default function HomePage() {
 
         <div className="max-w-4xl mx-auto">
           {/* Connection Test - Always show if there are connection issues */}
-          {(!connectionReady || process.env.NODE_ENV === "development") && (
+          {process.env.NODE_ENV === "development" && ( // Only show in development for debugging
             <div className="mb-6">
               <ConnectionTest />
             </div>
@@ -386,7 +364,7 @@ export default function HomePage() {
                           value={formData.fullName}
                           onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                           required
-                          disabled={!connectionReady || authLoading}
+                          disabled={authLoading}
                           className="border-gray-300 focus:border-navy-500 focus:ring-navy-500 text-sm sm:text-base"
                         />
                       </div>
@@ -401,7 +379,7 @@ export default function HomePage() {
                           value={formData.email}
                           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                           required
-                          disabled={!connectionReady || authLoading}
+                          disabled={authLoading}
                           className="border-gray-300 focus:border-navy-500 focus:ring-navy-500 text-sm sm:text-base"
                         />
                       </div>
@@ -417,7 +395,7 @@ export default function HomePage() {
                           value={formData.password}
                           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                           required
-                          disabled={!connectionReady || authLoading}
+                          disabled={authLoading}
                           className="border-gray-300 focus:border-navy-500 focus:ring-navy-500 text-sm sm:text-base"
                         />
                       </div>
@@ -431,7 +409,7 @@ export default function HomePage() {
                           value={formData.confirmPassword}
                           onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                           required
-                          disabled={!connectionReady || authLoading}
+                          disabled={authLoading}
                           className="border-gray-300 focus:border-navy-500 focus:ring-navy-500 text-sm sm:text-base"
                         />
                       </div>
@@ -466,7 +444,7 @@ export default function HomePage() {
                     <Button
                       type="submit"
                       className="w-full bg-navy-gradient hover:bg-navy-800 text-white shadow-lg text-sm sm:text-base py-2 sm:py-3"
-                      disabled={!connectionReady || authLoading}
+                      disabled={authLoading}
                     >
                       {authLoading ? "Membuat Akun..." : "Daftar Sekarang"}
                     </Button>
@@ -496,7 +474,7 @@ export default function HomePage() {
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         required
-                        disabled={!connectionReady || authLoading}
+                        disabled={authLoading}
                         className="border-gray-300 focus:border-navy-500 focus:ring-navy-500 text-sm sm:text-base"
                       />
                     </div>
@@ -510,14 +488,14 @@ export default function HomePage() {
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         required
-                        disabled={!connectionReady || authLoading}
+                        disabled={authLoading}
                         className="border-gray-300 focus:border-navy-500 focus:ring-navy-500 text-sm sm:text-base"
                       />
                     </div>
                     <Button
                       type="submit"
                       className="w-full bg-navy-gradient hover:bg-navy-800 text-white shadow-lg text-sm sm:text-base py-2 sm:py-3"
-                      disabled={!connectionReady || authLoading}
+                      disabled={authLoading}
                     >
                       {authLoading ? "Masuk..." : "Masuk"}
                     </Button>
