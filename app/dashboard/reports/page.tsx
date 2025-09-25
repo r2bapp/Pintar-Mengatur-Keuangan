@@ -1,6 +1,7 @@
 "use client"
 
 import type { ChartConfig } from "@/components/ui/chart"
+import { Pie } from "recharts" // Import Pie component
 
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
@@ -34,12 +35,13 @@ import {
   ChartXAxis,
   ChartYAxis,
   CartesianGrid,
-  Line as LineChart,
-  Pie,
-  PieChart as RechartsPieChart, // Rename to avoid conflict with Lucide icon
-  Legend,
+  LineChart, // Corrected import
+  RechartsPieChart, // Corrected import
+  RechartsLegend, // Corrected import
+  Cell, // Corrected import
+  Dot, // Corrected import
+  Line, // Corrected import for Line component within LineChart
 } from "@/components/ui/chart" // Import chart components
-import { Dot, Cell } from "@/components/ui/chart" // Import Dot and Cell components
 
 interface MonthlyData {
   month: string
@@ -942,7 +944,6 @@ export default function ReportsPage() {
               ) : (
                 <ChartContainer config={monthlyChartConfig} className="min-h-[300px]">
                   <LineChart
-                    accessibilityLayer
                     data={monthlyData}
                     margin={{
                       left: 12,
@@ -954,17 +955,35 @@ export default function ReportsPage() {
                     <ChartYAxis
                       tickLine={false}
                       axisLine={false}
-                      tickFormatter={(value) => formatCurrency(value)}
+                      tickFormatter={(value: number) => formatCurrency(value)}
                       tickMargin={8}
                     />
                     <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dashed" />} />
-                    <Legend />
-                    <Dot r={4} fill="var(--color-income)" stroke="var(--color-income)" />
-                    <Dot r={6} fill="var(--color-income)" stroke="var(--color-income)" />
-                    <Dot r={4} fill="var(--color-expense)" stroke="var(--color-expense)" />
-                    <Dot r={6} fill="var(--color-expense)" stroke="var(--color-expense)" />
-                    <Dot r={4} fill="var(--color-balance)" stroke="var(--color-balance)" />
-                    <Dot r={6} fill="var(--color-balance)" stroke="var(--color-balance)" />
+                    <RechartsLegend /> {/* Use RechartsLegend */}
+                    <Line
+                      dataKey="income"
+                      type="monotone"
+                      stroke="var(--color-income)"
+                      strokeWidth={2}
+                      dot={<Dot r={4} fill="var(--color-income)" stroke="var(--color-income)" />}
+                      activeDot={<Dot r={6} fill="var(--color-income)" stroke="var(--color-income)" />}
+                    />
+                    <Line
+                      dataKey="expense"
+                      type="monotone"
+                      stroke="var(--color-expense)"
+                      strokeWidth={2}
+                      dot={<Dot r={4} fill="var(--color-expense)" stroke="var(--color-expense)" />}
+                      activeDot={<Dot r={6} fill="var(--color-expense)" stroke="var(--color-expense)" />}
+                    />
+                    <Line
+                      dataKey="balance"
+                      type="monotone"
+                      stroke="var(--color-balance)"
+                      strokeWidth={2}
+                      dot={<Dot r={4} fill="var(--color-balance)" stroke="var(--color-balance)" />}
+                      activeDot={<Dot r={6} fill="var(--color-balance)" stroke="var(--color-balance)" />}
+                    />
                   </LineChart>
                 </ChartContainer>
               )}
@@ -1010,7 +1029,7 @@ export default function ReportsPage() {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Legend layout="vertical" verticalAlign="middle" align="right" />
+                    <RechartsLegend layout="vertical" verticalAlign="middle" align="right" />
                   </RechartsPieChart>
                 </ChartContainer>
               )}
@@ -1056,7 +1075,7 @@ export default function ReportsPage() {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Legend layout="vertical" verticalAlign="middle" align="right" />
+                    <RechartsLegend layout="vertical" verticalAlign="middle" align="right" />
                   </RechartsPieChart>
                 </ChartContainer>
               )}
