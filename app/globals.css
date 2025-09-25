@@ -24,6 +24,12 @@
     --input: 210 40% 90%;
     --ring: 210 100% 20%;
     --radius: 0.5rem;
+    --chart-1: 210 100% 20%; /* primary navy */
+    --chart-2: 120 40% 40%; /* primary sage */
+    --chart-3: 45 93% 47%; /* accent gold */
+    --chart-4: 340 75% 60%; /* destructive rose */
+    --chart-5: 220 13% 91%; /* border */
+    --chart-6: 210 40% 15%; /* foreground */
   }
 
   .dark {
@@ -46,6 +52,12 @@
     --border: 210 40% 20%;
     --input: 210 40% 20%;
     --ring: 120 40% 40%;
+    --chart-1: 120 40% 40%; /* primary sage */
+    --chart-2: 210 100% 20%; /* primary navy */
+    --chart-3: 180 100% 70%; /* accent */
+    --chart-4: 0 75% 60%; /* destructive */
+    --chart-5: 240 3.7% 15.9%; /* border */
+    --chart-6: 0 0% 95%; /* foreground */
   }
 }
 

@@ -1,11 +1,13 @@
 "use client"
 
+import type { ChartConfig } from "@/components/ui/chart"
+
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Input } from "@/components/ui/input" // Added for date inputs
+import { Input } from "@/components/ui/input"
 import {
   ArrowLeft,
   TrendingUp,
@@ -13,16 +15,31 @@ import {
   Brain,
   Calendar,
   BarChart3,
-  PieChart,
+  LucidePieChart,
   DollarSign,
   FileText,
   FileSpreadsheet,
   Download,
+  Lightbulb,
+  RefreshCw,
 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
 import { useAuth } from "@/hooks/use-auth"
-import { Footer } from "@/components/footer" // Ensure Footer is imported
+import { Footer } from "@/components/footer"
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartXAxis,
+  ChartYAxis,
+  CartesianGrid,
+  Line as LineChart,
+  Pie,
+  PieChart as RechartsPieChart, // Rename to avoid conflict with Lucide icon
+  Legend,
+} from "@/components/ui/chart" // Import chart components
+import { Dot, Cell } from "@/components/ui/chart" // Import Dot and Cell components
 
 interface MonthlyData {
   month: string
@@ -75,6 +92,8 @@ export default function ReportsPage() {
     netBalance: 0,
   })
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null)
+  const [aiRecommendations, setAiRecommendations] = useState<string | null>(null)
+  const [aiLoading, setAiLoading] = useState(false)
 
   const getPeriodText = () => {
     switch (selectedPeriod) {
@@ -109,12 +128,13 @@ export default function ReportsPage() {
     if (user) {
       fetchReportData()
     }
-  }, [user, loading, selectedPeriod, customStartDate, customEndDate, router]) // Added custom dates to dependency array
+  }, [user, loading, selectedPeriod, customStartDate, customEndDate, router])
 
   const fetchReportData = async () => {
     if (!user) return
 
     setReportLoading(true)
+    setAiRecommendations(null) // Clear AI recommendations on new data fetch
     try {
       let startDate: Date
       let endDate: Date = new Date()
@@ -238,16 +258,16 @@ export default function ReportsPage() {
 
     // Convert to array and calculate percentages
     const colors = [
-      "#ef4444",
+      "hsl(var(--chart-1))",
+      "hsl(var(--chart-2))",
+      "hsl(var(--chart-3))",
+      "hsl(var(--chart-4))",
+      "hsl(var(--chart-5))",
+      "hsl(var(--chart-6))",
+      "#ef4444", // Fallback colors
       "#f97316",
       "#eab308",
       "#22c55e",
-      "#06b6d4",
-      "#3b82f6",
-      "#8b5cf6",
-      "#ec4899",
-      "#f59e0b",
-      "#10b981",
     ]
 
     const expenseCategories = Array.from(expenseMap.entries())
@@ -304,6 +324,44 @@ export default function ReportsPage() {
       currency: "IDR",
       minimumFractionDigits: 0,
     }).format(amount)
+  }
+
+  const fetchAiRecommendations = async () => {
+    if (!user || !profile) {
+      toast.error("Profil pengguna tidak ditemukan untuk rekomendasi AI.")
+      return
+    }
+
+    setAiLoading(true)
+    setAiRecommendations(null)
+    try {
+      const response = await fetch("/api/ai-recommendations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          profile,
+          totalStats,
+          monthlyData,
+          expenseCategories,
+          incomeCategories,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      setAiRecommendations(data.recommendations)
+      toast.success("Rekomendasi AI berhasil dimuat!")
+    } catch (error: any) {
+      console.error("Error fetching AI recommendations:", error)
+      toast.error("Gagal memuat rekomendasi AI: " + error.message)
+    } finally {
+      setAiLoading(false)
+    }
   }
 
   const exportToPDF = useCallback(async () => {
@@ -442,6 +500,19 @@ export default function ReportsPage() {
         }
       }
 
+      // AI Recommendations
+      if (aiRecommendations) {
+        doc.addPage()
+        doc.setFontSize(14)
+        doc.setTextColor(36, 59, 83)
+        doc.text("Rekomendasi AI", 20, 20)
+
+        const recommendationsText = doc.splitTextToSize(aiRecommendations, 170) // Max width 170mm
+        doc.setFontSize(10)
+        doc.setTextColor(50, 50, 50)
+        doc.text(recommendationsText, 20, 30)
+      }
+
       // Save PDF
       const fileName = `Laporan-Keuangan-${getPeriodText().replace(/\s+/g, "-")}-${new Date().toISOString().split("T")[0]}.pdf`
       doc.save(fileName)
@@ -451,7 +522,7 @@ export default function ReportsPage() {
       console.error("Error generating PDF:", error)
       toast.error("Gagal membuat PDF. Pastikan browser mendukung fitur ini.")
     }
-  }, [logoDataUrl, profile?.full_name, totalStats, monthlyData, expenseCategories, rawTransactions])
+  }, [logoDataUrl, profile?.full_name, totalStats, monthlyData, expenseCategories, rawTransactions, aiRecommendations])
 
   const exportToExcel = async () => {
     try {
@@ -568,6 +639,14 @@ export default function ReportsPage() {
         XLSX.utils.book_append_sheet(wb, transactionWS, "Detail Transaksi")
       }
 
+      // AI Recommendations Sheet
+      if (aiRecommendations) {
+        const aiRecsSheetData = [["Rekomendasi AI"], [""], [aiRecommendations]]
+        const aiRecsWS = XLSX.utils.aoa_to_sheet(aiRecsSheetData)
+        aiRecsWS["!cols"] = [{ wch: 100 }] // Adjust width for recommendations
+        XLSX.utils.book_append_sheet(wb, aiRecsWS, "Rekomendasi AI")
+      }
+
       // Save Excel file with better filename
       const fileName = `Laporan-Keuangan-${getPeriodText().replace(/\s+/g, "-")}-${new Date().toISOString().split("T")[0]}.xlsx`
 
@@ -595,8 +674,20 @@ export default function ReportsPage() {
       return
     }
 
+    const dataToExport = {
+      profile,
+      totalStats,
+      monthlyData,
+      expenseCategories,
+      incomeCategories,
+      rawTransactions,
+      aiRecommendations,
+      reportPeriod: getPeriodText(),
+      generatedAt: new Date().toISOString(),
+    }
+
     const fileName = `Transaksi-Keuangan-${getPeriodText().replace(/\s+/g, "-")}-${new Date().toISOString().split("T")[0]}.json`
-    const jsonString = JSON.stringify(rawTransactions, null, 2)
+    const jsonString = JSON.stringify(dataToExport, null, 2)
     const blob = new Blob([jsonString], { type: "application/json" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
@@ -632,6 +723,37 @@ export default function ReportsPage() {
       </div>
     )
   }
+
+  const monthlyChartConfig = {
+    income: {
+      label: "Pemasukan",
+      color: "hsl(var(--chart-1))",
+    },
+    expense: {
+      label: "Pengeluaran",
+      color: "hsl(var(--chart-4))",
+    },
+    balance: {
+      label: "Saldo",
+      color: "hsl(var(--chart-3))",
+    },
+  }
+
+  const expenseChartConfig = expenseCategories.reduce((acc, cat, index) => {
+    acc[cat.category.replace(/\s+/g, "-").toLowerCase()] = {
+      label: cat.category,
+      color: cat.color,
+    }
+    return acc
+  }, {} as ChartConfig)
+
+  const incomeChartConfig = incomeCategories.reduce((acc, cat, index) => {
+    acc[cat.category.replace(/\s+/g, "-").toLowerCase()] = {
+      label: cat.category,
+      color: cat.color,
+    }
+    return acc
+  }, {} as ChartConfig)
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -803,7 +925,7 @@ export default function ReportsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Monthly Trend */}
+          {/* Monthly Trend Chart */}
           <Card className="border-gray-200 shadow-lg">
             <CardHeader className="bg-gray-50 border-b">
               <CardTitle className="flex items-center space-x-2 text-navy-800">
@@ -818,45 +940,42 @@ export default function ReportsPage() {
                   <p className="text-gray-500">Belum ada data untuk periode ini</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {monthlyData.map((month, index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-navy-700">{month.month}</span>
-                        <span
-                          className={`text-sm font-semibold ${month.balance >= 0 ? "text-sage-600" : "text-rose-500"}`}
-                        >
-                          {formatCurrency(month.balance)}
-                        </span>
-                      </div>
-                      <div className="space-y-1">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-3 h-3 bg-sage-500 rounded-full"></div>
-                          <span className="text-xs text-gray-600">Pemasukan: {formatCurrency(month.income)}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-3 h-3 bg-rose-500 rounded-full"></div>
-                          <span className="text-xs text-gray-600">Pengeluaran: {formatCurrency(month.expense)}</span>
-                        </div>
-                        {month.savings > 0 && (
-                          <div className="flex items-center space-x-2">
-                            <div className="w-3 h-3 bg-navy-500 rounded-full"></div>
-                            <span className="text-xs text-gray-600">Tabungan: {formatCurrency(month.savings)}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <ChartContainer config={monthlyChartConfig} className="min-h-[300px]">
+                  <LineChart
+                    accessibilityLayer
+                    data={monthlyData}
+                    margin={{
+                      left: 12,
+                      right: 12,
+                    }}
+                  >
+                    <CartesianGrid vertical={false} />
+                    <ChartXAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} minTickGap={32} />
+                    <ChartYAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value) => formatCurrency(value)}
+                      tickMargin={8}
+                    />
+                    <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dashed" />} />
+                    <Legend />
+                    <Dot r={4} fill="var(--color-income)" stroke="var(--color-income)" />
+                    <Dot r={6} fill="var(--color-income)" stroke="var(--color-income)" />
+                    <Dot r={4} fill="var(--color-expense)" stroke="var(--color-expense)" />
+                    <Dot r={6} fill="var(--color-expense)" stroke="var(--color-expense)" />
+                    <Dot r={4} fill="var(--color-balance)" stroke="var(--color-balance)" />
+                    <Dot r={6} fill="var(--color-balance)" stroke="var(--color-balance)" />
+                  </LineChart>
+                </ChartContainer>
               )}
             </CardContent>
           </Card>
 
-          {/* Expense Categories */}
+          {/* Expense Categories Chart */}
           <Card className="border-gray-200 shadow-lg">
             <CardHeader className="bg-gray-50 border-b">
               <CardTitle className="flex items-center space-x-2 text-navy-800">
-                <PieChart className="h-5 w-5" />
+                <LucidePieChart className="h-5 w-5" />
                 <span>Kategori Pengeluaran</span>
               </CardTitle>
               <CardDescription>Breakdown pengeluaran berdasarkan kategori</CardDescription>
@@ -867,29 +986,42 @@ export default function ReportsPage() {
                   <p className="text-gray-500">Belum ada data pengeluaran</p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {expenseCategories.map((category, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-4 h-4 rounded-full" style={{ backgroundColor: category.color }}></div>
-                        <span className="text-sm font-medium text-navy-700">{category.category}</span>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-semibold text-navy-800">{formatCurrency(category.amount)}</div>
-                        <div className="text-xs text-gray-500">{category.percentage.toFixed(1)}%</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <ChartContainer config={expenseChartConfig} className="min-h-[300px]">
+                  <RechartsPieChart>
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          nameKey="category"
+                          valueKey="amount"
+                          formatter={(value: number) => formatCurrency(value)}
+                        />
+                      }
+                    />
+                    <Pie
+                      data={expenseCategories}
+                      dataKey="amount"
+                      nameKey="category"
+                      innerRadius={60}
+                      outerRadius={100}
+                      label={({ category, percent }) => `${category} (${(percent * 100).toFixed(0)}%)`}
+                      labelLine={false}
+                    >
+                      {expenseCategories.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Legend layout="vertical" verticalAlign="middle" align="right" />
+                  </RechartsPieChart>
+                </ChartContainer>
               )}
             </CardContent>
           </Card>
 
-          {/* Income Categories */}
+          {/* Income Categories Chart */}
           <Card className="border-gray-200 shadow-lg">
             <CardHeader className="bg-gray-50 border-b">
               <CardTitle className="flex items-center space-x-2 text-navy-800">
-                <PieChart className="h-5 w-5" />
+                <LucidePieChart className="h-5 w-5" />
                 <span>Kategori Pemasukan</span>
               </CardTitle>
               <CardDescription>Breakdown pemasukan berdasarkan kategori</CardDescription>
@@ -900,19 +1032,81 @@ export default function ReportsPage() {
                   <p className="text-gray-500">Belum ada data pemasukan</p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {incomeCategories.map((category, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-4 h-4 rounded-full" style={{ backgroundColor: category.color }}></div>
-                        <span className="text-sm font-medium text-navy-700">{category.category}</span>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-semibold text-navy-800">{formatCurrency(category.amount)}</div>
-                        <div className="text-xs text-gray-500">{category.percentage.toFixed(1)}%</div>
-                      </div>
-                    </div>
-                  ))}
+                <ChartContainer config={incomeChartConfig} className="min-h-[300px]">
+                  <RechartsPieChart>
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          nameKey="category"
+                          valueKey="amount"
+                          formatter={(value: number) => formatCurrency(value)}
+                        />
+                      }
+                    />
+                    <Pie
+                      data={incomeCategories}
+                      dataKey="amount"
+                      nameKey="category"
+                      innerRadius={60}
+                      outerRadius={100}
+                      label={({ category, percent }) => `${category} (${(percent * 100).toFixed(0)}%)`}
+                      labelLine={false}
+                    >
+                      {incomeCategories.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Legend layout="vertical" verticalAlign="middle" align="right" />
+                  </RechartsPieChart>
+                </ChartContainer>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* AI Recommendations Card */}
+          <Card className="lg:col-span-2 border-gray-200 shadow-lg">
+            <CardHeader className="bg-gray-50 border-b">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center space-x-2 text-navy-800">
+                  <Lightbulb className="h-5 w-5 text-gold-600" />
+                  <span>Rekomendasi AI</span>
+                </CardTitle>
+                <Button
+                  onClick={fetchAiRecommendations}
+                  disabled={aiLoading || reportLoading || !user || !profile}
+                  size="sm"
+                  className="bg-gold-600 hover:bg-gold-700 text-white"
+                >
+                  {aiLoading ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Memuat...
+                    </>
+                  ) : (
+                    <>
+                      <Lightbulb className="h-4 w-4 mr-2" />
+                      Dapatkan Rekomendasi
+                    </>
+                  )}
+                </Button>
+              </div>
+              <CardDescription>Saran keuangan yang dipersonalisasi berdasarkan data Anda</CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              {aiLoading && (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Menganalisis data dan membuat rekomendasi...</p>
+                </div>
+              )}
+              {!aiLoading && aiRecommendations && (
+                <div className="prose prose-sm max-w-none text-gray-700">
+                  <p className="whitespace-pre-wrap">{aiRecommendations}</p>
+                </div>
+              )}
+              {!aiLoading && !aiRecommendations && (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Klik "Dapatkan Rekomendasi" untuk melihat saran AI.</p>
                 </div>
               )}
             </CardContent>
