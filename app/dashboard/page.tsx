@@ -396,7 +396,7 @@ export default function DashboardPage() {
                   <Wallet className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="text-lg font-semibold text-navy-900 mb-2">Selamat datang di KeuanganPintar Pro!</h3>
-                <p className="text-gray-600 mb-4 max-w-md mx-auto">
+                <p className="text-navy-800 font-bold-600 mb-4 max-w-md mx-auto">
                   Mulai kelola keuangan Anda dengan menambahkan transaksi pertama. Data akan tersimpan secara real-time
                   dan dapat diakses kapan saja.
                 </p>
