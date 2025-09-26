@@ -177,7 +177,7 @@ export default function DashboardPage() {
                 <img src="/logo.png" alt="KeuanganPintar Pro" className="h-10 w-10" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-blue">KeuanganPintar Pro</h1>
+                <h1 className="text-xl font-bold text-blue-900">KeuanganPintar Pro</h1>
                 <p className="text-navy-800 font-bold">
                   Selamat datang, {profile?.full_name || user?.email?.split("@")[0] || "User"}
                 </p>
