@@ -19,9 +19,6 @@ import {
   FileText,
   FileSpreadsheet,
   Download,
-  Lightbulb,
-  RefreshCw,
-  AlertTriangle,
 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
@@ -58,7 +55,7 @@ const formatDateLocal = (d: Date) => {
 
 export default function ReportsPage() {
   const router = useRouter()
-  const { user, profile, loading } = useAuth()
+  const { user, loading } = useAuth()
   const [reportLoading, setReportLoading] = useState(true)
   const [selectedPeriod, setSelectedPeriod] = useState("current-month")
   const [customStartDate, setCustomStartDate] = useState("")
@@ -73,12 +70,8 @@ export default function ReportsPage() {
     totalSavings: 0,
     netBalance: 0,
   })
-  const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null)
-  const [aiRecommendations, setAiRecommendations] = useState<string | null>(null)
-  const [aiLoading, setAiLoading] = useState(false)
-  const [aiEnabled, setAiEnabled] = useState<boolean | null>(null)
 
-  const [monthlyChartConfig, setMonthlyChartConfig] = useState<ChartConfig>({
+  const [monthlyChartConfig] = useState<ChartConfig>({
     income: { label: "Pemasukan", color: "hsl(var(--chart-1))" },
     expense: { label: "Pengeluaran", color: "hsl(var(--chart-4))" },
     balance: { label: "Saldo", color: "hsl(var(--chart-3))" },
@@ -86,46 +79,6 @@ export default function ReportsPage() {
 
   const [expenseChartConfig, setExpenseChartConfig] = useState<ChartConfig>({})
   const [incomeChartConfig, setIncomeChartConfig] = useState<ChartConfig>({})
-
-  const getPeriodText = () => {
-    switch (selectedPeriod) {
-      case "current-month":
-        return "Bulan Ini"
-      case "last-3-months":
-        return "3 Bulan Terakhir"
-      case "last-6-months":
-        return "6 Bulan Terakhir"
-      case "current-year":
-        return "Tahun Ini"
-      case "custom":
-        return `Kustom: ${customStartDate || "..."} hingga ${customEndDate || "..."}`
-      default:
-        return "Periode Terpilih"
-    }
-  }
-
-  useEffect(() => {
-    // Preload logo for PDF export
-    const img = new Image()
-    img.crossOrigin = "anonymous"
-    img.onload = () => {
-      const canvas = document.createElement("canvas")
-      canvas.width = img.width
-      canvas.height = img.height
-      const ctx = canvas.getContext("2d")
-      ctx?.drawImage(img, 0, 0)
-      setLogoDataUrl(canvas.toDataURL("image/png"))
-    }
-    img.src = "/logo.png"
-  }, [])
-
-  useEffect(() => {
-    // AI status (avoid showing a broken button)
-    fetch("/api/ai-recommendations")
-      .then((r) => r.json())
-      .then((d) => setAiEnabled(Boolean(d.enabled)))
-      .catch(() => setAiEnabled(false))
-  }, [])
 
   useEffect(() => {
     if (!loading && !user) {
@@ -141,7 +94,6 @@ export default function ReportsPage() {
   const fetchReportData = async () => {
     if (!user) return
     setReportLoading(true)
-    setAiRecommendations(null)
     try {
       let startDate: Date
       let endDate: Date = new Date()
@@ -354,47 +306,6 @@ export default function ReportsPage() {
     }).format(amount)
   }, [])
 
-  const fetchAiRecommendations = async () => {
-    if (!user || !profile) {
-      toast.error("Profil pengguna tidak ditemukan untuk rekomendasi AI.")
-      return
-    }
-    if (aiEnabled === false) {
-      toast.error("AI belum dikonfigurasi. Tambahkan OPENAI_API_KEY di Project Settings.")
-      return
-    }
-
-    setAiLoading(true)
-    setAiRecommendations(null)
-    try {
-      const response = await fetch("/api/ai-recommendations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          profile,
-          totalStats,
-          monthlyData,
-          expenseCategories,
-          incomeCategories,
-        }),
-      })
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}))
-        throw new Error(err.error || `HTTP ${response.status}`)
-      }
-
-      const data = await response.json()
-      setAiRecommendations(data.recommendations)
-      toast.success("Rekomendasi AI berhasil dimuat!")
-    } catch (error: any) {
-      console.error("Error fetching AI recommendations:", error)
-      toast.error("Gagal memuat rekomendasi AI: " + error.message)
-    } finally {
-      setAiLoading(false)
-    }
-  }
-
   const exportToPDF = () => {
     toast.info("Fitur ekspor ke PDF belum tersedia.")
   }
@@ -493,15 +404,6 @@ export default function ReportsPage() {
       </header>
 
       <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 w-full max-w-7xl">
-        {/* AI notice if disabled */}
-        {aiEnabled === false && (
-          <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-amber-800 flex items-center gap-2 text-sm">
-            <AlertTriangle className="h-4 w-4 shrink-0" />
-            Rekomendasi AI belum aktif. Tambahkan OPENAI_API_KEY pada Project Settings → Environment Variables, lalu
-            redeploy. [AI SDK uses the configured provider key] [^2]
-          </div>
-        )}
-
         {/* Period Selection */}
         <div className="mb-6 sm:mb-8">
           <Card className="border-gray-200 shadow-sm">
@@ -681,55 +583,6 @@ export default function ReportsPage() {
                   formatCurrency={formatCurrency}
                   className="min-h-[300px]"
                 />
-              )}
-            </CardContent>
-          </Card>
-
-          {/* AI Recommendations Card */}
-          <Card className="lg:col-span-2 border-gray-200 shadow-sm">
-            <CardHeader className="bg-muted/30 border-b px-3 sm:px-6 py-3">
-              <div className="flex items-center justify-between gap-2">
-                <CardTitle className="flex items-center gap-2 text-emerald-900">
-                  <Lightbulb className="h-5 w-5 text-emerald-700" />
-                  <span>Rekomendasi AI</span>
-                </CardTitle>
-                <Button
-                  onClick={fetchAiRecommendations}
-                  disabled={aiLoading || reportLoading || !user || !profile || aiEnabled === false}
-                  size="sm"
-                  className="bg-emerald-700 hover:bg-emerald-800 text-white"
-                >
-                  {aiLoading ? (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                      Memuat...
-                    </>
-                  ) : (
-                    <>
-                      <Lightbulb className="h-4 w-4 mr-2" />
-                      Dapatkan Rekomendasi
-                    </>
-                  )}
-                </Button>
-              </div>
-              <CardDescription>Saran keuangan yang dipersonalisasi berdasarkan data Anda</CardDescription>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-6">
-              {aiLoading && (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-700 mx-auto mb-4"></div>
-                  <p className="text-muted-foreground">Menganalisis data dan membuat rekomendasi...</p>
-                </div>
-              )}
-              {!aiLoading && aiRecommendations && (
-                <div className="prose prose-sm max-w-none text-foreground">
-                  <p className="whitespace-pre-wrap">{aiRecommendations}</p>
-                </div>
-              )}
-              {!aiLoading && !aiRecommendations && (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">Klik "Dapatkan Rekomendasi" untuk melihat saran AI.</p>
-                </div>
               )}
             </CardContent>
           </Card>
