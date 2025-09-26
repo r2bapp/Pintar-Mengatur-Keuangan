@@ -1,19 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { Dot, Line, type LineProps } from "recharts" // Keep Line and Dot for internal use if needed, but not for export
-
 import { cn } from "@/lib/utils"
-import {
-  TooltipContent as ShadcnTooltipContent,
-  Tooltip as ShadcnTooltip,
-  TooltipTrigger,
-  TooltipProvider,
-} from "@/components/ui/tooltip"
+import { Dot, Line, type LineProps } from "recharts"
 
-// --------------------------------------------------
-// Chart Config Type
-// --------------------------------------------------
 export type ChartConfig = {
   [k: string]: {
     label?: string
@@ -22,25 +12,37 @@ export type ChartConfig = {
   }
 }
 
-// --------------------------------------------------
-// ChartContainer
-// --------------------------------------------------
 interface ChartContainerProps extends React.HTMLAttributes<HTMLDivElement> {
   config: ChartConfig
   children?: React.ReactNode
 }
 
 const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerProps>(
-  ({ config, children, className, ...props }, ref) => {
+  ({ config, children, className, style, ...props }, ref) => {
     const id = React.useId()
-    if (!config) return null
+
+    // Map config colors to CSS variables like --color-income, --color-expense, etc.
+    const cssVars: React.CSSProperties = { ...(style || {}) }
+    Object.entries(config || {}).forEach(([key, value]) => {
+      const varName = `--color-${key}`
+      ;(cssVars as any)[varName] = value?.color ?? "hsl(var(--chart-1))"
+    })
 
     return (
       <div
         data-chart={id}
         ref={ref}
+        style={cssVars}
         className={cn(
-          "flex h-[400px] w-full items-center justify-center text-xs [&_.recharts-cartesian-grid]:stroke-border [&_.recharts-dot]:fill-primary [&_.recharts-active-dot]:stroke-background [&_.recharts-tooltip-cursor]:fill-accent [&_.recharts-yAxis .recharts-cartesian-axis-tick-value]:fill-foreground [&_.recharts-xAxis .recharts-cartesian-axis-tick-value]:fill-foreground [&_.recharts-xAxis .recharts-axis-line]:stroke-border [&_.recharts-yAxis .recharts-axis-line]:stroke-border",
+          "flex w-full items-center justify-center text-xs",
+          "min-h-[280px] md:min-h-[320px] lg:min-h-[360px]",
+          // nice default theming for axis/grid/ticks
+          "[&_.recharts-cartesian-grid]:stroke-border",
+          "[&_.recharts-yAxis_.recharts-cartesian-axis-tick-value]:fill-foreground",
+          "[&_.recharts-xAxis_.recharts-cartesian-axis-tick-value]:fill-foreground",
+          "[&_.recharts-xAxis_.recharts-axis-line]:stroke-border",
+          "[&_.recharts-yAxis_.recharts-axis-line]:stroke-border",
+          "[&_.recharts-tooltip-cursor]:fill-muted",
           className,
         )}
         {...props}
@@ -52,85 +54,6 @@ const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerProps>(
 )
 ChartContainer.displayName = "ChartContainer"
 
-// --------------------------------------------------
-// Tooltip Wrapper
-// --------------------------------------------------
-interface ChartTooltipProps extends React.ComponentProps<typeof ShadcnTooltip> {
-  content?: React.ReactNode
-}
-
-const ChartTooltip = React.forwardRef<React.ElementRef<typeof ShadcnTooltip>, ChartTooltipProps>(
-  ({ children, content, ...props }, ref) => (
-    <TooltipProvider>
-      <ShadcnTooltip ref={ref} {...props}>
-        <TooltipTrigger asChild>{children}</TooltipTrigger>
-        <ShadcnTooltipContent>{content}</ShadcnTooltipContent>
-      </ShadcnTooltip>
-    </TooltipProvider>
-  ),
-)
-ChartTooltip.displayName = "ChartTooltip"
-
-// --------------------------------------------------
-// TooltipContent
-// --------------------------------------------------
-interface ChartTooltipContentProps extends React.ComponentProps<typeof ShadcnTooltipContent> {
-  indicator?: "line" | "dot" | "dashed"
-  nameKey?: string
-  valueKey?: string
-  formatter?: (value: any, name: string, props: any) => React.ReactNode
-}
-
-const ChartTooltipContent = React.forwardRef<React.ElementRef<typeof ShadcnTooltipContent>, ChartTooltipContentProps>(
-  ({ indicator = "dot", nameKey, valueKey, formatter, className, ...props }, ref) => {
-    return (
-      <ShadcnTooltipContent ref={ref} className={cn("grid min-w-[120px] items-center", className)} {...props}>
-        {(payload: any[]) => {
-          if (!payload || payload.length === 0) return null
-          const { payload: itemPayload, label } = payload[0]
-          return (
-            <div className="grid gap-1">
-              <div className="text-sm font-medium leading-none">{label}</div>
-              {payload.map((item, index) => {
-                const name = nameKey ? itemPayload[nameKey] : item.name
-                const value = valueKey ? itemPayload[valueKey] : item.value
-                const formattedValue = formatter ? formatter(value, name, item) : value
-                return (
-                  <div key={item.dataKey || index} className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-2">
-                      {indicator === "dot" && (
-                        <span className="flex h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
-                      )}
-                      {indicator === "line" && (
-                        <span className="flex h-3 w-1 rounded-full" style={{ backgroundColor: item.color }} />
-                      )}
-                      {indicator === "dashed" && (
-                        <span
-                          className="flex h-3 w-3 rounded-full border-2 border-dashed"
-                          style={{ borderColor: item.color }}
-                        />
-                      )}
-                      <span className="text-muted-foreground">{name}</span>
-                    </div>
-                    <span className="font-medium">{formattedValue}</span>
-                  </div>
-                )
-              })}
-            </div>
-          )
-        }}
-      </ShadcnTooltipContent>
-    )
-  },
-)
-ChartTooltipContent.displayName = "ChartTooltipContent"
-
-// --------------------------------------------------
-// Custom Wrappers (if any, otherwise remove)
-// --------------------------------------------------
-// If you have custom wrappers for Line, Pie, etc., define them here.
-// Otherwise, import Line, Pie directly from 'recharts' in your page.
-// For now, I'll keep ChartLine as an example, but ensure it's used correctly.
 interface ChartLineProps extends LineProps {
   dataKey: string
   stroke?: string
@@ -141,16 +64,27 @@ const ChartLine = React.forwardRef<any, ChartLineProps>(({ dataKey, stroke, name
   <Line
     ref={ref}
     dataKey={dataKey}
-    stroke={stroke || "var(--color-primary)"}
+    stroke={stroke || `var(--color-${String(dataKey)})`}
     name={name || dataKey}
-    dot={<Dot r={4} fill="var(--color-primary)" stroke="var(--color-primary)" />}
-    activeDot={<Dot r={6} fill="var(--color-primary)" stroke="var(--color-primary)" />}
+    type="monotone"
+    strokeWidth={2}
+    dot={
+      <Dot
+        r={4}
+        fill={stroke || `var(--color-${String(dataKey)})`}
+        stroke={stroke || `var(--color-${String(dataKey)})`}
+      />
+    }
+    activeDot={
+      <Dot
+        r={6}
+        fill={stroke || `var(--color-${String(dataKey)})`}
+        stroke={stroke || `var(--color-${String(dataKey)})`}
+      />
+    }
     {...props}
   />
 ))
 ChartLine.displayName = "ChartLine"
 
-// --------------------------------------------------
-// Exports
-// --------------------------------------------------
-export { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLine }
+export { ChartContainer, ChartLine }

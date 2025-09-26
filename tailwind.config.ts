@@ -13,51 +13,55 @@ const config: Config = {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: "1rem",
       screens: {
         "2xl": "1400px",
       },
     },
     extend: {
+      // Remap brand tokens to green palette so existing classnames keep working
       colors: {
-        // Custom color scheme
+        // "navy" becomes deep green family (brand primary)
         navy: {
-          50: "#f0f4f8",
-          100: "#d9e2ec",
-          200: "#bcccdc",
-          300: "#9fb3c8",
-          400: "#829ab1",
-          500: "#627d98",
-          600: "#486581",
-          700: "#334e68",
-          800: "#243b53",
-          900: "#102a43",
-          950: "#0a1929",
+          50: "#e6f0e6",
+          100: "#cfe3cf",
+          200: "#a6c7a6",
+          300: "#7cab7c",
+          400: "#4f8f50",
+          500: "#2d6f2f",
+          600: "#1f5e21",
+          700: "#154a17",
+          800: "#0f3a11",
+          900: "#0a2d0c",
+          950: "#004d00", // requested deep green anchor
         },
+        // "sage" becomes mid green family (secondary)
         sage: {
-          50: "#f0f4f0",
-          100: "#d4e4d4",
-          200: "#a8c8a8",
-          300: "#7cac7c",
-          400: "#509050",
-          500: "#2d5a2d",
-          600: "#234823",
-          700: "#1a361a",
-          800: "#112411",
-          900: "#081208",
+          50: "#eaf5ef",
+          100: "#d4ebdf",
+          200: "#a7d7c0",
+          300: "#7ac4a2",
+          400: "#4ebf8f",
+          500: "#2f9d72",
+          600: "#23855f",
+          700: "#1b6a4d",
+          800: "#15533c",
+          900: "#0f3d2c",
         },
+        // "gold" becomes light green/teal accent
         gold: {
-          50: "#fffdf0",
-          100: "#fef7c3",
-          200: "#feee95",
-          300: "#fde047",
-          400: "#facc15",
-          500: "#eab308",
-          600: "#ca8a04",
-          700: "#a16207",
-          800: "#854d0e",
-          900: "#713f12",
+          50: "#edf8f6",
+          100: "#d7f0ea",
+          200: "#bfe6dd",
+          300: "#a7dccf",
+          400: "#8fd2c2",
+          500: "#77c7b4",
+          600: "#66b3a1", // requested
+          700: "#4c9785",
+          800: "#37756a",
+          900: "#295a52",
         },
+        // keep rose for error/destructive
         rose: {
           50: "#fdf2f8",
           100: "#fce7f3",
@@ -103,7 +107,7 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Chart colors
+        // Chart colors (hooked to CSS variables in globals.css)
         "chart-1": "hsl(var(--chart-1))",
         "chart-2": "hsl(var(--chart-2))",
         "chart-3": "hsl(var(--chart-3))",
