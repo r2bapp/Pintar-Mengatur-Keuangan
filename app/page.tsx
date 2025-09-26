@@ -241,7 +241,7 @@ export default function HomePage() {
                 <img src="/logo.png" alt="KeuanganPintar Pro" className="h-8 w-8 sm:h-10 sm:w-10" />{" "}
                 {/* Increased logo size */}
               </div>
-              <h1 className="text-lg sm:text-2xl font-bold text-white">KeuanganPintar Pro</h1>
+              <h1 className="text-lg sm:text-2xl font-bold text-blue-900">KeuanganPintar Pro</h1>
             </div>
             <div className="hidden sm:flex items-center space-x-2">
               <Wallet className="h-4 w-4 sm:h-5 sm:w-5 text-sage-200" /> {/* Changed icon from Brain to Wallet */}
