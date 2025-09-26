@@ -227,7 +227,7 @@ export default function DashboardPage() {
               <Wallet className="h-4 w-4 text-navy-600" />
             </CardHeader>
             <CardContent className="p-4">
-              <div className={`text-2xl font-bold ${stats.currentBalance >= 0 ? "text-sage-600" : "text-rose-500"}`}>
+              <div className={`text-2xl font-bold ${stats.currentBalance >= 0 ? "text-sage-700" : "text-rose-500"}`}>
                 {formatCurrency(stats.currentBalance)}
               </div>
               <p className="text-xs text-muted-foreground">Pemasukan - Pengeluaran</p>
