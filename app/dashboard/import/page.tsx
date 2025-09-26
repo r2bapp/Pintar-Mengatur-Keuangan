@@ -210,7 +210,7 @@ export default function ImportPage() {
                   <img src="/logo.png" alt="KeuanganPintar Pro" className="h-5 w-5" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-white">Import Data</h1>
+                  <h1 className="text-xl font-bold text-navy-900">Import Data</h1>
                   <p className="text-sm text-navy-900">Upload file Excel untuk import transaksi</p>
                 </div>
               </div>
