@@ -223,7 +223,7 @@ export default function FinancialGoalsPage() {
                   <img src="/logo.png" alt="KeuanganPintar Pro" className="h-5 w-5" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-white">Tujuan Keuangan</h1>
+                  <h1 className="text-xl font-bold text-navy-900">Tujuan Keuangan</h1>
                   <p className="text-sm text-navy-900">Rencanakan dan capai impian finansial Anda</p>
                 </div>
               </div>
