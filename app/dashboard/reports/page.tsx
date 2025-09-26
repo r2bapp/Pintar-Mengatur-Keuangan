@@ -363,7 +363,7 @@ export default function ReportsPage() {
                   <img src="/logo.png" alt="KeuanganPintar Pro" className="h-5 w-5" />
                 </div>
                 <div className="truncate">
-                  <h1 className="text-base sm:text-xl font-bold text-white leading-tight">Laporan Keuangan</h1>
+                  <h1 className="text-base sm:text-xl font-bold text-navy-900 leading-tight">Laporan Keuangan</h1>
                   <p className="text-xs sm:text-sm text-white/80 truncate">Analisis dan insight keuangan Anda</p>
                 </div>
               </div>
