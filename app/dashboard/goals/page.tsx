@@ -213,7 +213,7 @@ export default function FinancialGoalsPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => router.push("/dashboard")}
-                className="text-white hover:bg-navy-700"
+                className="text-gold-900 hover:bg-navy-500"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Kembali
@@ -224,7 +224,7 @@ export default function FinancialGoalsPage() {
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-white">Tujuan Keuangan</h1>
-                  <p className="text-sm text-sage-100">Rencanakan dan capai impian finansial Anda</p>
+                  <p className="text-sm text-navy-900">Rencanakan dan capai impian finansial Anda</p>
                 </div>
               </div>
             </div>
