@@ -205,7 +205,7 @@ export default function DashboardPage() {
               <TrendingUp className="h-4 w-4 text-sage-600" />
             </CardHeader>
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-sage-600">{formatCurrency(stats.totalIncome)}</div>
+              <div className="text-2xl font-bold text-sage-700">{formatCurrency(stats.totalIncome)}</div>
               <p className="text-xs text-muted-foreground">Bulan ini</p>
             </CardContent>
           </Card>
