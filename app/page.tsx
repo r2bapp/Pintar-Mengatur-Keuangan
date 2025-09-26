@@ -244,8 +244,8 @@ export default function HomePage() {
               <h1 className="text-lg sm:text-2xl font-bold text-blue-900">KeuanganPintar Pro</h1>
             </div>
             <div className="hidden sm:flex items-center space-x-2">
-              <Wallet className="h-4 w-4 sm:h-5 sm:w-5 text-sage-500" /> {/* Changed icon from Brain to Wallet */}
-              <span className="text-xs sm:text-sm text-sage-900">Kelola Keuangan dengan Mudah</span>
+              <Wallet className="h-4 w-4 sm:h-5 sm:w-5 text-sage-800" /> {/* Changed icon from Brain to Wallet */}
+              <span className="text-xs sm:text-sm text-navy-800">Kelola Keuangan dengan Mudah</span>
             </div>
           </div>
         </div>
