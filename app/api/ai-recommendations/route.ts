@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     const fullName = profile.full_name || "Pengguna"
 
     const prompt = `
-Anda adalah penasihat keuangan yang bijaksana dan membantu. Berdasarkan data keuangan berikut untuk pengguna bernama ${fullName} dengan kategori ${userType}, berikan 3-5 rekomendasi yang ringkas, mudah dipahami, dan dapat ditindaklanjuti untuk meningkatkan kesehatan keuangan, mengelola pengeluaran, dan meningkatkan tabungan.
+Anda adalah penasihat keuangan yang bijaksana dan membantu. Berdasarkan data keuangan berikut untuk pengguna bernama ${fullName} dengan kategori ${userType}, berikan 2 rekomendasi yang ringkas, mudah dipahami, dan dapat ditindaklanjuti untuk meningkatkan kesehatan keuangan, mengelola pengeluaran, dan meningkatkan tabungan.
 
 Profil Pengguna:
 - Nama: ${fullName}
@@ -61,7 +61,7 @@ ${incomeCategories
   )
   .join("\n")}
 
-Rekomendasi Keuangan Anda (3-5 poin):
+Rekomendasi Keuangan Anda (1-2 poin):
     `
 
     const { text } = await generateText({
