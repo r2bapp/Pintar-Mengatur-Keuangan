@@ -223,7 +223,7 @@ export default function DashboardPage() {
 
           <Card className="border-gray-200 shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-navy-50 border-b">
-              <CardTitle className="text-sm font-medium text-navy-700">Saldo Saat Ini</CardTitle>
+              <CardTitle className="text-sm font-medium text-navy-800">Saldo Saat Ini</CardTitle>
               <Wallet className="h-4 w-4 text-navy-600" />
             </CardHeader>
             <CardContent className="p-4">
