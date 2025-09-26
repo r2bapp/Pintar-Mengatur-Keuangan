@@ -9,70 +9,51 @@ const config: Config = {
     "./src/**/*.{ts,tsx}",
     "*.{js,ts,jsx,tsx,mdx}",
   ],
-  prefix: "",
   theme: {
     container: {
       center: true,
-      padding: "1rem",
-      screens: {
-        "2xl": "1400px",
-      },
+      padding: "2rem",
+      screens: { "2xl": "1400px" },
     },
     extend: {
-      // Remap brand tokens to green palette so existing classnames keep working
       colors: {
-        // "navy" becomes deep green family (brand primary)
+        // Green-focused theme (dark → light)
         navy: {
-          50: "#e6f0e6",
-          100: "#cfe3cf",
-          200: "#a6c7a6",
-          300: "#7cab7c",
-          400: "#4f8f50",
-          500: "#2d6f2f",
-          600: "#1f5e21",
-          700: "#154a17",
-          800: "#0f3a11",
-          900: "#0a2d0c",
-          950: "#004d00", // requested deep green anchor
+          50: "#e6f2e6",
+          100: "#cce5cc",
+          200: "#99cc99",
+          300: "#66b366",
+          400: "#339933",
+          500: "#1f8a4c",
+          600: "#0f7a3c",
+          700: "#0a5f2d",
+          800: "#004d00", // requested dark green
+          900: "#003300",
+          950: "#001a00",
         },
-        // "sage" becomes mid green family (secondary)
         sage: {
-          50: "#eaf5ef",
-          100: "#d4ebdf",
-          200: "#a7d7c0",
-          300: "#7ac4a2",
-          400: "#4ebf8f",
-          500: "#2f9d72",
-          600: "#23855f",
-          700: "#1b6a4d",
-          800: "#15533c",
-          900: "#0f3d2c",
+          50: "#f0faf7",
+          100: "#d8f0e8",
+          200: "#bfe6d9",
+          300: "#a6dccb",
+          400: "#8dd2bc",
+          500: "#74c8ae",
+          600: "#66b3a1", // requested soft green/teal
+          700: "#4e8f81",
+          800: "#397063",
+          900: "#274e44",
         },
-        // "gold" becomes light green/teal accent
         gold: {
-          50: "#edf8f6",
-          100: "#d7f0ea",
-          200: "#bfe6dd",
-          300: "#a7dccf",
-          400: "#8fd2c2",
-          500: "#77c7b4",
-          600: "#66b3a1", // requested
-          700: "#4c9785",
-          800: "#37756a",
-          900: "#295a52",
-        },
-        // keep rose for error/destructive
-        rose: {
-          50: "#fdf2f8",
-          100: "#fce7f3",
-          200: "#fbcfe8",
-          300: "#f9a8d4",
-          400: "#f472b6",
-          500: "#ec4899",
-          600: "#db2777",
-          700: "#be185d",
-          800: "#9d174d",
-          900: "#831843",
+          50: "#fffdf0",
+          100: "#fef7c3",
+          200: "#feee95",
+          300: "#fde047",
+          400: "#facc15",
+          500: "#eab308",
+          600: "#ca8a04",
+          700: "#a16207",
+          800: "#854d0e",
+          900: "#713f12",
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -107,7 +88,7 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Chart colors (hooked to CSS variables in globals.css)
+        // Chart colors
         "chart-1": "hsl(var(--chart-1))",
         "chart-2": "hsl(var(--chart-2))",
         "chart-3": "hsl(var(--chart-3))",
@@ -121,14 +102,8 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
-        },
+        "accordion-down": { from: { height: "0" }, to: { height: "var(--radix-accordion-content-height)" } },
+        "accordion-up": { from: { height: "var(--radix-accordion-content-height)" }, to: { height: "0" } },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -137,6 +112,6 @@ const config: Config = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config
+}
 
 export default config

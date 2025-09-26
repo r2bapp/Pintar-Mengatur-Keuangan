@@ -1,81 +1,79 @@
-import { NextResponse } from "next/server"
 import { generateText } from "ai"
 import { openai } from "@ai-sdk/openai"
-import { xai } from "@ai-sdk/xai"
+import { NextResponse } from "next/server"
 
-/**
- * Generates AI financial recommendations with AI SDK.
- * Uses OpenAI if OPENAI_API_KEY is present, otherwise falls back to xAI Grok (XAI_API_KEY).
- * If neither key is configured, returns a 500 with a clear message. [^2]
- */
+export async function GET() {
+  // Expose whether AI is enabled to clients without leaking the key
+  const enabled = Boolean(process.env.OPENAI_API_KEY)
+  return NextResponse.json({ enabled })
+}
+
 export async function POST(req: Request) {
   try {
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        { error: "AI is not configured. Set OPENAI_API_KEY in your environment." },
+        { status: 500 },
+      )
+    }
+
     const { profile, totalStats, monthlyData, expenseCategories, incomeCategories } = await req.json()
 
     if (!profile || !totalStats || !monthlyData || !expenseCategories || !incomeCategories) {
       return NextResponse.json({ error: "Missing financial data" }, { status: 400 })
     }
 
-    const useOpenAI = !!process.env.OPENAI_API_KEY
-    const useXAI = !!process.env.XAI_API_KEY
-
-    if (!useOpenAI && !useXAI) {
-      return NextResponse.json(
-        {
-          error:
-            "AI provider key missing. Set OPENAI_API_KEY or XAI_API_KEY in your environment to enable recommendations.",
-          howToFix:
-            "On Vercel, add the key in Project Settings > Environment Variables, then redeploy. Locally, set it before `next dev`.",
-        },
-        { status: 500 },
-      )
-    }
-
-    const model = useOpenAI ? openai("gpt-4o") : xai("grok-3")
-
-    const fullName = profile.full_name || "Pengguna"
     const userType = profile.user_type || "personal"
+    const fullName = profile.full_name || "Pengguna"
 
     const prompt = `
-Anda adalah penasihat keuangan berbahasa Indonesia yang bijaksana dan to the point.
-Berikan 3–5 rekomendasi yang spesifik, aplikatif, dan bernilai bagi ${fullName} (tipe ${userType}).
-Gunakan poin-poin, sertakan angka target/batas jika relevan.
+Anda adalah penasihat keuangan yang bijaksana dan membantu. Berdasarkan data keuangan berikut untuk pengguna bernama ${fullName} dengan kategori ${userType}, berikan 3-5 rekomendasi yang ringkas, mudah dipahami, dan dapat ditindaklanjuti untuk meningkatkan kesehatan keuangan, mengelola pengeluaran, dan meningkatkan tabungan.
 
-Ringkasan:
-- Total Pemasukan: Rp ${Number(totalStats.totalIncome || 0).toLocaleString("id-ID")}
-- Total Pengeluaran: Rp ${Number(totalStats.totalExpense || 0).toLocaleString("id-ID")}
-- Total Tabungan: Rp ${Number(totalStats.totalSavings || 0).toLocaleString("id-ID")}
-- Saldo Bersih: Rp ${Number(totalStats.netBalance || 0).toLocaleString("id-ID")}
+Profil Pengguna:
+- Nama: ${fullName}
+- Tipe Pengguna: ${userType}
 
-Tren Bulanan (bulan: pemasukan/pengeluaran/saldo):
+Ringkasan Keuangan (Periode Terpilih):
+- Total Pemasukan: Rp ${Number(totalStats.totalIncome).toLocaleString("id-ID")}
+- Total Pengeluaran: Rp ${Number(totalStats.totalExpense).toLocaleString("id-ID")}
+- Total Tabungan: Rp ${Number(totalStats.totalSavings).toLocaleString("id-ID")}
+- Saldo Bersih: Rp ${Number(totalStats.netBalance).toLocaleString("id-ID")}
+
+Tren Bulanan (Pemasukan vs. Pengeluaran):
 ${monthlyData
   .map(
-    (m: any) =>
-      `- ${m.month}: Rp ${Number(m.income).toLocaleString("id-ID")} / Rp ${Number(m.expense).toLocaleString("id-ID")} / Rp ${Number(m.balance).toLocaleString("id-ID")}`,
+    (d: any) =>
+      `- ${d.month}: Pemasukan Rp ${Number(d.income).toLocaleString("id-ID")}, Pengeluaran Rp ${Number(d.expense).toLocaleString("id-ID")}, Saldo Rp ${Number(d.balance).toLocaleString("id-ID")}`,
   )
   .join("\n")}
 
 Kategori Pengeluaran Teratas:
-${expenseCategories.map((c: any) => `- ${c.category}: Rp ${Number(c.amount).toLocaleString("id-ID")} (${Number(c.percentage).toFixed(1)}%)`).join("\n")}
+${expenseCategories
+  .map(
+    (c: any) => `- ${c.category}: Rp ${Number(c.amount).toLocaleString("id-ID")} (${Number(c.percentage).toFixed(1)}%)`,
+  )
+  .join("\n")}
 
 Kategori Pemasukan Teratas:
-${incomeCategories.map((c: any) => `- ${c.category}: Rp ${Number(c.amount).toLocaleString("id-ID")} (${Number(c.percentage).toFixed(1)}%)`).join("\n")}
+${incomeCategories
+  .map(
+    (c: any) => `- ${c.category}: Rp ${Number(c.amount).toLocaleString("id-ID")} (${Number(c.percentage).toFixed(1)}%)`,
+  )
+  .join("\n")}
 
-Output:
-- 3–5 poin rekomendasi terstruktur (gunakan bullet point).
-- Hindari jargon. Maks 120 kata total.
-`
+Rekomendasi Keuangan Anda (3-5 poin):
+    `
 
     const { text } = await generateText({
-      model,
+      model: openai("gpt-4o"),
       prompt,
-      temperature: 0.6,
+      temperature: 0.7,
       maxTokens: 500,
     })
 
     return NextResponse.json({ recommendations: text })
   } catch (error: any) {
     console.error("Error generating AI recommendations:", error)
-    return NextResponse.json({ error: error?.message || "Failed to generate AI recommendations" }, { status: 500 })
+    return NextResponse.json({ error: error.message || "Failed to generate AI recommendations" }, { status: 500 })
   }
 }

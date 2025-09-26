@@ -1,86 +1,66 @@
-/* Base Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Greens as base theme */
     --background: 0 0% 100%;
-    --foreground: 160 20% 15%;
-
+    --foreground: 150 20% 18%;
     --card: 0 0% 100%;
-    --card-foreground: 160 20% 15%;
-
+    --card-foreground: 150 20% 18%;
     --popover: 0 0% 100%;
-    --popover-foreground: 160 20% 15%;
-
-    /* Primary = deep green, Secondary = mid green, Accent = light teal-green */
-    --primary: 120 100% 15%; /* ~ #004d00 */
+    --popover-foreground: 150 20% 18%;
+    --primary: 150 100% 24%; /* ~ #007a33 */
     --primary-foreground: 0 0% 98%;
-
-    --secondary: 157 58% 34%; /* ~ #007a33 */
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 156 25% 95%;
-    --muted-foreground: 160 10% 40%;
-
-    --accent: 166 34% 58%; /* ~ #66b3a1 */
-    --accent-foreground: 168 32% 14%;
-
-    --destructive: 340 75% 85%;
-    --destructive-foreground: 340 75% 35%;
-
-    --border: 160 20% 85%;
-    --input: 160 20% 85%;
-    --ring: 120 100% 15%;
-
+    --secondary: 150 30% 92%;
+    --secondary-foreground: 150 40% 20%;
+    --muted: 150 30% 96%;
+    --muted-foreground: 150 15% 40%;
+    --accent: 168 30% 55%; /* ~ #66b3a1 */
+    --accent-foreground: 150 40% 15%;
+    --destructive: 0 75% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 150 20% 88%;
+    --input: 150 20% 88%;
+    --ring: 150 100% 24%;
     --radius: 0.5rem;
 
     /* Chart palette (greens) */
-    --chart-1: 120 100% 15%; /* deep green */
-    --chart-2: 157 58% 34%; /* mid green */
-    --chart-3: 166 34% 58%; /* teal-green */
-    --chart-4: 140 45% 40%; /* alt green */
-    --chart-5: 160 20% 85%; /* neutral border greenish */
-    --chart-6: 160 20% 15%; /* dark foreground */
+    --chart-1: 150 100% 24%; /* #007a33 */
+    --chart-2: 120 100% 15%; /* ~ #004d00 */
+    --chart-3: 168 30% 55%; /* #66b3a1 */
+    --chart-4: 0 74% 58%; /* rose for negatives */
+    --chart-5: 150 20% 80%; /* soft green border */
+    --chart-6: 150 20% 30%; /* dark foreground */
   }
 
   .dark {
-    --background: 160 20% 8%;
-    --foreground: 0 0% 95%;
-
-    --card: 160 20% 10%;
-    --card-foreground: 0 0% 95%;
-
-    --popover: 160 20% 10%;
-    --popover-foreground: 0 0% 95%;
-
-    --primary: 157 58% 34%;
+    --background: 150 20% 8%;
+    --foreground: 0 0% 96%;
+    --card: 150 20% 10%;
+    --card-foreground: 0 0% 96%;
+    --popover: 150 20% 10%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 150 60% 35%;
     --primary-foreground: 0 0% 98%;
+    --secondary: 150 20% 18%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 150 20% 16%;
+    --muted-foreground: 150 10% 70%;
+    --accent: 168 30% 55%;
+    --accent-foreground: 150 20% 10%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 96%;
+    --border: 150 15% 24%;
+    --input: 150 15% 24%;
+    --ring: 150 60% 35%;
 
-    --secondary: 120 100% 15%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 160 20% 15%;
-    --muted-foreground: 160 10% 65%;
-
-    --accent: 166 34% 58%;
-    --accent-foreground: 170 20% 12%;
-
-    --destructive: 0 75% 60%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 160 20% 22%;
-    --input: 160 20% 22%;
-    --ring: 157 58% 34%;
-
-    --chart-1: 157 58% 34%;
+    --chart-1: 150 60% 35%;
     --chart-2: 120 100% 15%;
-    --chart-3: 166 34% 58%;
-    --chart-4: 140 45% 40%;
-    --chart-5: 160 20% 25%;
-    --chart-6: 0 0% 95%;
+    --chart-3: 168 30% 55%;
+    --chart-4: 0 70% 50%;
+    --chart-5: 150 15% 30%;
+    --chart-6: 0 0% 96%;
   }
 }
 
@@ -89,34 +69,20 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground;
   }
 }
 
-/* Utilities for green gradients and text */
+/* Utilities */
 @layer utilities {
-  .bg-navy-gradient {
-    /* Deep to mid green */
-    background: linear-gradient(135deg, #004d00 0%, #007a33 100%);
+  .bg-green-gradient {
+    background: linear-gradient(135deg, #004d00 0%, #007a33 60%, #66b3a1 100%);
   }
-  .bg-sage-gradient {
-    background: linear-gradient(135deg, #007a33 0%, #2f9d72 100%);
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
-  .bg-gold-gradient {
-    /* Teal-green accent gradient */
-    background: linear-gradient(135deg, #66b3a1 0%, #77c7b4 100%);
-  }
-
-  .text-navy {
-    @apply text-navy-800;
-  }
-  .text-sage {
-    @apply text-sage-600;
-  }
-  .text-gold {
-    @apply text-gold-600;
-  }
-  .text-rose-soft {
-    @apply text-rose-400;
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
