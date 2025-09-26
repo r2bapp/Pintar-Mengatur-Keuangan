@@ -178,7 +178,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-blue">KeuanganPintar Pro</h1>
-                <p className="text-sm text-sage-100 fint-bold">
+                <p className="text-sm text-sage-100 font-bold">
                   Selamat datang, {profile?.full_name || user?.email?.split("@")[0] || "User"}
                 </p>
               </div>
