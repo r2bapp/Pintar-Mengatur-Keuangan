@@ -184,10 +184,10 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="sm" onClick={handleRefresh} className="text-white hover:bg-navy-700">
+              <Button variant="ghost" size="sm" onClick={handleRefresh} className="text-gold-900 hover:bg-navy-800">
                 <RefreshCw className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-white hover:bg-navy-700">
+              <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-gold-900 hover:bg-navy-700">
                 <LogOut className="h-4 w-4 mr-2" />
                 Keluar
               </Button>
