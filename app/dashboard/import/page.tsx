@@ -200,7 +200,7 @@ export default function ImportPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => router.push("/dashboard")}
-                className="text-white hover:bg-navy-700"
+                className="text-gold-900 hover:bg-navy-500"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Kembali
@@ -211,7 +211,7 @@ export default function ImportPage() {
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-white">Import Data</h1>
-                  <p className="text-sm text-sage-100">Upload file Excel untuk import transaksi</p>
+                  <p className="text-sm text-navy-900">Upload file Excel untuk import transaksi</p>
                 </div>
               </div>
             </div>
