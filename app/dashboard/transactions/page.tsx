@@ -303,7 +303,7 @@ export default function AddTransactionPage() {
                     />
                   </div>
                   {formData.amount && (
-                    <p className="text-sm text-blue-600 font-medium">
+                    <p className="text-sm text-blue-700 font-medium">
                       Rp {new Intl.NumberFormat("id-ID").format(Number.parseInt(formData.amount) || 0)}
                     </p>
                   )}
